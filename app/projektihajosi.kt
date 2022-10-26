@@ -1,4 +1,5 @@
 /*
+20221016, VN
 Projekti hajosi johonkin ubuntuvirheeseen. Activity.java ei löydä importteja etc . . . Pljon punaista.
 ./gradlew check kertoi, että
 
@@ -21,4 +22,8 @@ BUILD SUCCESSFUL in 47s
 94 actionable tasks: 60 executed, 34 up-to-date
 pappa@pappa-ThinkPad-X270:~/AndroidStudioProjects/petrol$
 Meni läpi ja yllätys yllätys, studiossa projekti toimii taas!
+
+Chipmunk kuva ei tule näkyviin studion käynnistyksessä, on vaan pelkät raamit.
+Komentoriviltä käynnistäessä (studio.sh) tulee näkyviin ok.
+20221026, VN: Thinkpadin bootin jälkeen chipmunk tuli sitten näkyviin työpöydälä käynnistettynäkin.
  */
