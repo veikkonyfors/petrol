@@ -1,13 +1,10 @@
 package com.viware.petrol
 
-
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -17,17 +14,40 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import java.io.File
 import android.util.Log
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.view.drawToBitmap
+import androidx.core.content.FileProvider
+import androidx.lifecycle.lifecycleScope
+
+// VN 20221026
+//import androidx.viewbinding.BuildConfig
+//import com.viware.petrol.BuildConfig
 
 private const val TAG = "MainActivity"
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
-    /* pitäisi laittaa sivuun deprekoitu startActivityForResult + onActivityResult versio
-       Käytetään sen sijaan Activity Result APIn
-    registerForActivityResult ja palautetun ActivityResultLauncher.launch() metodia*/
+    /* Change deprecated startActivityForResult + onActivityResult
+        to Androidx Activity Result API methods
+        registerForActivityResult(ActivityResultContracts.TakePicture()) and
+        launch() method of the returned ActivityResultLauncher object.
+    */
+
+    // Uri where image taken by TakePicture contract is accessible
+    private var cameraImageUri: Uri? = null
+    // A preview imageview of the shot pylon image. By lazy to speed up startup
+    private val pylonPreviewImage by lazy { findViewById<ImageView>(R.id.pricetable_Image) }
+
+    // Register for taking the photo.
+    // ActivityResultLauncher(Uri) returned, with launch(Uri) method.
+    // Registering takes place using a lambda function: If the launch(Uri) was successful, imageUri for pylonPreviewImage gets updated to image just shot.
+    // The old startActivityForResult way commented down there on btnCamera.setOnClickListener method.
+    private val takeImageResult = registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess ->
+        if (isSuccess) {
+            cameraImageUri?.let { uri ->
+                pylonPreviewImage.setImageURI(uri)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -41,9 +61,11 @@ class MainActivity : AppCompatActivity() {
 
         val btnCamera: Button = findViewById(R.id.button_camera)
         btnCamera.setOnClickListener {
+            takeImage()
             //Toast.makeText(this, "btnCamera clicked", Toast.LENGTH_LONG).show()
-                val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                startActivityForResult(cameraIntent, 200)
+            // Old startActivityForResult way commented out now
+            //    val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            //    startActivityForResult(cameraIntent, 200)
         }
 
         val btnFillUp: Button = findViewById(R.id.button_fillup)
@@ -54,7 +76,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    private fun takeImage() {
+        lifecycleScope.launchWhenStarted {
+            getTmpFileUri().let { uri ->
+                cameraImageUri = uri
+                Log.i(TAG,"uri: $uri")
+                takeImageResult.launch(uri)
+            }
+        }
+    }
+
+    private fun getTmpFileUri(): Uri {
+        val tmpFile = File.createTempFile("tmp_image_file", ".png", cacheDir).apply {
+            createNewFile()
+            deleteOnExit()
+        }
+
+        return FileProvider.getUriForFile(applicationContext, "${BuildConfig.APPLICATION_ID}.provider", tmpFile)
+    }
+
+    // This old onActivityResult way will now be commented out
+    // We use ActivityResultLauncher.launch(Uri) method instead in btnCamera lictener.
+    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && requestCode == 200 && data != null){
             val imageView : ImageView = ImageView(this)
@@ -86,11 +129,8 @@ class MainActivity : AppCompatActivity() {
                 // real
                 //val handlePylonPrices = HandlePylonPrices(R.id.button_camera)
             } else Log.d(TAG, "Unable to access image file:$imagePath")
-
-
-
         }
-    }
+    }*/
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
