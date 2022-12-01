@@ -19,6 +19,7 @@ class PylonImageTest{
 
     @Test
     fun testPylonImage() {
+        //
         //val  pylonImage: Uri =(
         //    Uri("content://com.viware.petrol.provider/cached_files/vihtinestepyloni_248.jpg"))
     }
