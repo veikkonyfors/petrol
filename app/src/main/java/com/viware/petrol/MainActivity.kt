@@ -23,6 +23,7 @@ import androidx.lifecycle.lifecycleScope
 //import com.viware.petrol.BuildConfig
 
 private const val TAG = "MainActivity"
+private const val TEST_IMAGE = "content://com.viware.petrol.provider/cached_files/vihtinestepyloni_248.jpg"
 
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
@@ -44,7 +45,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     private val takeImageResult = registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess ->
         if (isSuccess) {
             cameraImageUri?.let { uri ->
-                pylonPreviewImage.setImageURI(uri)
+                //pylonPreviewImage.setImageURI(uri)
+                pylonPreviewImage.setImageURI(Uri.parse(TEST_IMAGE))
             }
         }
     }
